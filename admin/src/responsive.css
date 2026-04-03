@@ -1,0 +1,353 @@
+@media only screen and (min-width: 478px) and (max-width: 992px) {
+ .res-hide{display:none !important;}
+ .res-col{flex-direction:column !important;}
+  body{overflow-x:hidden !important;}
+ .MuiBreadcrumbs-root{margin-top:15px !important;}
+  header {
+    padding: 12px 0;
+    height: auto;
+    width:550px !important;
+  }
+ /* Part 1 */
+  header .part1 {
+    padding: 0px !important;
+    max-width: 40% !important;
+    flex: 0 0 40% !important;
+    display: flex;
+    align-items: center;
+    position:relative;
+    right:15px;
+  }
+  header .logo img {
+    width: 60px !important;
+    padding: 5px !important;
+    margin-right:1px !important;
+  }
+  header .logo span {
+    font-size: 16px;
+    line-height: 14px;
+    margin-left:0px !important;
+  }
+  /* Hide Part 2 on mobile */
+  header .part2 {
+    display: none !important;
+  }
+  
+  header .part3 {
+    max-width: 60% !important;
+    flex: 0 0 60% !important;
+    padding-left: 20px !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center;
+    gap: 0px; /* brings buttons close together */
+  }
+  /* Center row and button adjustments */
+   header .row {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  header button.rounded-circle {
+    width: 35px !important;
+    height: 35px !important;
+    min-width:30px !important;
+    margin-right: 4px !important;
+  }
+  header .btn-blue {
+    font-size: 12px !important;
+    padding: 3px 3px !important;
+    margin-left:2px !important;
+  }
+   /* Fix part3 alignment */
+
+  .userImg{width:40px; height:40px; margin-right:0px !important;}
+  .myAccWrapper button{padding: 0px !important; min-width:52px !important; width:52px !important;}
+  #account-menu li {
+    font-size: 12px !important;
+    padding: 2px 5px !important;   
+ }
+  .profileAvatar{
+  width:  29px !important;
+  height: 29px !important;
+}
+ .profileAvatar .MuiSvgIcon-root{
+  width: 20px !important;
+  height: 20px !important;
+}
+ .MuiMenu-paper {
+  width: 160px;
+  height:260px;
+}
+.MuiMenuItem-root {
+  min-height: 9px;
+  padding: 6px 12px;
+}
+.MuiMenu-list {
+  padding: 2px 0;
+}
+.MuiListItemIcon-root {
+  min-width: 25px !important;
+ }
+ body {
+  background-color: #2f454a; /* use your app’s outer background color */
+}
+ .MuiPopover-root {
+  background-color: transparent !important;}
+.main .sidebarWrapper {
+  width: 48% !important;            /* better mobile width */
+  max-width: 300px !important;      /* prevents too wide sidebar */
+  height: 100vh !important;
+
+  position: fixed;
+  top: 0;
+  left: -100%;
+
+  z-index: 990 !important;
+  opacity: 0;
+
+  background: #fff;                 /* ensure proper background */
+  box-shadow: 2px 0 12px rgba(0,0,0,0.25);
+
+  transition: left 0.3s ease, opacity 0.3s ease;
+}
+/* Sidebar inner content */
+.main .sidebarWrapper .sidebar {
+  width: 100% !important;
+  height: 90%;
+  position: relative !important;
+  overflow-y: auto !important;      /* scroll if content is long */
+  -webkit-overflow-scrolling: touch;
+}
+/* Open state */
+.sidebarWrapper.open {
+  left: 0 !important;
+  opacity: 1 !important;
+}
+/* Overlay */
+.sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 130vh;
+
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 990 !important;
+}
+.main .content{width:120% !important; flex:0 0 110% !important;}
+.right-content{padding:110px 2px !important;}
+.product.right-content{padding:100px 7px !important; width:520px !important;}
+.product.right-content{position:relative !important; bottom:14px; right:7px;}
+.newProductList .card{width:492px !important; position:relative; right:10px; bottom:40px;}
+.dashboardBoxWrapper{white-space: nowrap !important; overflow-x: scroll; overflow-y:hidden; display:block !important;
+margin-bottom:10px !important; margin-right:60px !important;}
+.dashboardBoxWrapper::-webkit-scrollbar{display:none !important;}
+.dashboardBoxWrapper .dashboardBox{display:inline-block !important; width:280px !important; height:160px !important;
+margin-right:10px !important;}
+.topPart2{padding-right:65px !important; padding-left:0px !important; width:478px !important;}
+ .tableFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .tableFooter nav {
+    margin-top: 0;
+    width: 100%;
+    overflow-x: auto;
+  }
+   /* Center action buttons perfectly */
+ .newActions .actions {
+  display: flex !important;
+  align-items: center !important;   /* vertical center */
+  justify-content: center !important; /* horizontal center */
+  padding-right:40px !important;
+}
+/* ACTION column: force vertical centering */
+.v-align td:last-child {
+  height: 50%;
+  vertical-align: middle !important;
+  padding-top: 10px !important;
+  padding-bottom: 0 !important;
+  padding-right:50px !important;
+  padding-left:0px !important;
+}
+/* keep your button size */
+.newActions .actions button {
+  padding: 6px !important;
+  min-width: 10px !important;
+  height: 10px !important; 
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  }
+.newSection .card{width:539px !important; position:relative;}
+.logoutWrapper .logoutBox{position:relative; right:15px !important; width:283px !important; height:140px !important;}
+}
+/* 📱 Mobile responsive */
+@media (max-width: 768px) {
+  .slide {
+    width: 180px;
+  }
+
+  .slide img {
+    height: 120px;
+  }
+
+  .sliderTrack {
+    width: calc(180px * 12);
+  }
+
+  @keyframes scrollSlider {
+    100% {
+      transform: translateX(calc(-180px * 6));
+    }
+  }
+}
+@media only screen and (min-width: 478px) and (max-width: 992px){
+  .productSlider {
+  width: 496px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.productSlider {
+  position: relative;
+  z-index: 2;
+  bottom:149px;
+  left:8px;
+  background: #f1f1f1;   /* same as page bg */
+  padding: 20px 0;
+  margin-top: 20px;
+}
+.productUpload{
+  width:500px;
+  position:relative;
+  left:5px;
+}
+}
+@media only screen and (min-width: 486px) and (max-width: 802px){
+  .bg-video {
+    width: 99vw;
+    height: 99vh;
+    min-width: unset;
+    min-height: unset;
+    object-fit: cover;
+    top: 50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+  }
+  .productInfo .col-sm-3{max-width:200px !important; flex: 0 0 200px !important;}
+  .productInfo .col-sm-7{max-width:100% !important; flex:0 0 100% !important; padding-right:46px !important;}
+}
+@media only screen and (min-width: 486px) and (max-width: 802px) {
+  /* Container */
+  .productInfo {
+    margin-top: 15px;
+    font-size: 14px;
+  }
+  h5 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  h3 {
+    font-size: 21px;
+    line-height: 1.35;
+    margin-bottom: 15px;
+  }
+  /* Each info row → card style */
+  .productInfo .row {
+    margin: 0 0 10px 0 !important;
+    padding: 10px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    align-items: center;
+  }
+  /* Left column (icon + label) */
+  .productInfo .col-sm-3 {
+    max-width: 42%;
+    flex: 0 0 42%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  /* Right column (value) */
+  .productInfo .col-sm-7 {
+    max-width: 58%;
+    flex: 0 0 58%;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  /* Icons */
+  .productInfo .icon {
+    font-size: 18px;
+    color: #444;
+    display: flex;
+    align-items: center;
+  }
+  /* Labels */
+  .productInfo .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+  }
+  /* Colon */
+  .productInfo .colon {
+    margin-right: 6px;
+    font-weight: 600;
+    color: #555;
+  }
+  /* Price */
+  .special-price {
+    font-size: 22px;
+    font-weight: 700;
+    color: #e53935;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .discount-percentage {
+    font-size: 13px;
+    margin-left: 6px;
+    color: #2e7d32;
+    font-weight: 600;
+  }
+  /* Tags */
+  ul.tags {
+    padding-left: 0;
+    margin: 4px 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  ul.tags li {
+    list-style: none;
+  }
+  .tag-item {
+    background: #ff3d3d;
+    color: #fff;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  /* Stock highlight */
+  .productInfo .row:nth-child(8) .name {
+    color: #2e7d32;
+    font-weight: 700;
+  }
+  /* Review & published */
+  .productInfo .row:last-child .name,
+  .productInfo .row:nth-last-child(2) .name {
+    font-size: 13px;
+    color: #666;
+  }
+  .productOld{width:540px !important; position:relative; bottom:20px;}
+  .oldd{width:530px !important; position:relative; bottom:160px;}
+  .productNew{width:540px !important; position:relative; bottom:20px;}
+  .neww{width:530px !important; position:relative; bottom:160px;}
+}
+

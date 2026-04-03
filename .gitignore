@@ -1,0 +1,20 @@
+# Node modules (very important)
+node_modules/
+
+# Sub-project node modules
+admin/node_modules/
+client/node_modules/
+server/node_modules/
+
+# Logs
+*.log
+
+# Environment files
+.env
+
+# Build folders
+dist/
+build/
+
+# VS Code
+.vscode/
