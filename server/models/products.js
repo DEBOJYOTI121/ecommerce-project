@@ -16,7 +16,10 @@ const productSchema = mongoose.Schema({
       type: String
     }
   ],
-
+  imageType: {
+  type: String,
+  enum: ["url", "file"],
+  },
   brand: {
     type: String,
     default: ""

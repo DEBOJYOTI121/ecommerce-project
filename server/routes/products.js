@@ -92,6 +92,7 @@ router.get("/", async (req, res) => {
         name: req.body.name,
         description: req.body.description,
         images: imageUrls,
+        imageType: req.body.imageType,
         brand: req.body.brand,
         price: Number(req.body.price),
         oldPrice: Number(req.body.oldPrice),
@@ -153,26 +154,33 @@ router.put(
     try {
       let imageUrls = [];
 
-      // if new images uploaded
-      if (req.files && req.files.length > 0) {
-        const uploads = await Promise.all(
-          req.files.map((file) =>
-            cloudinary.uploader.upload(file.path, { folder: "products" })
-          )
-        );
+// ✅ PRIORITY 1: URL
+if (req.body.imageType === "url") {
+  const urls = req.body.imageUrls;
+  imageUrls = Array.isArray(urls) ? urls : [urls];
+}
+// ✅ PRIORITY 2: FILE
+else if (req.files && req.files.length > 0) {
+  const uploads = await Promise.all(
+    req.files.map((file) =>
+      cloudinary.uploader.upload(file.path, { folder: "products" })
+    )
+  );
 
-        imageUrls = uploads.map((u) => u.secure_url);
+  imageUrls = uploads.map((u) => u.secure_url);
 
-        req.files.forEach((file) => fs.remove(file.path));
-      }
-
+  req.files.forEach((file) => fs.remove(file.path));
+}     
       const product = await Product.findByIdAndUpdate(
         req.params.id,
         {
           name: req.body.name,
           description: req.body.description,
-          images: imageUrls.length ? imageUrls : req.body.images,
-          brand: req.body.brand,
+          images:
+            imageUrls.length > 0
+              ? imageUrls
+              : req.body.images || [],
+          imageType: req.body.imageType || "file",
           price: req.body.price,
           oldPrice: req.body.oldPrice,
           category: req.body.category,
