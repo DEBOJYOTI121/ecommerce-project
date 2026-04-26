@@ -17,14 +17,9 @@ import { Button, Menu, MenuItem,FormControl, Select} from "@mui/material";
 import Pagination from "@mui/material/Pagination"; 
 import { fetchDataFromApi } from "../utils/api";
 import { deleteData } from "../utils/api";
-import { editData } from "../utils/api";
 import Checkbox from '@mui/material/Checkbox';
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogActions from "@mui/material/DialogActions";
 import TextField from "@mui/material/TextField";
-import CircularProgress from "@mui/material/CircularProgress";
+
 
 /* ---------------- Scatter Chart Helpers ---------------- */ 
 const getRandomNumber = () => Math.floor(Math.random() * 100) + 1; 
@@ -63,7 +58,6 @@ const scatterChartOptions =
      };
     const handleClose = () => {
       setAnchorEl(null);   // closes Menu
-      setEditId(null);
     };
     const [prodData, setProdData] = useState({
       productList: [],
@@ -79,11 +73,7 @@ const loadProducts = async (page = 1) => {
   if (res) setProdData(res);
   setIsLoading(false);
 };
-// Dialog
-const handleEditClose = () => {
-  setOpenEdit(false);
-  setEditId(null);
-};
+
 useEffect(() => {
   window.scrollTo(0, 0);
   loadProducts();
@@ -97,54 +87,6 @@ useEffect(() => {
   const res = await fetchDataFromApi(`/api/products?page=${value}`);
   if (res) setProdData(res);
   setIsLoading(false);
-};
-const [openEdit, setOpenEdit] = useState(false);
-const [editId, setEditId] = useState(null);
-const [editLoading, setEditLoading] = useState(false);
-const [editFields, setEditFields] = useState({
-  name: "",
-  price: "",
-  oldPrice: "",
-  brand: "",
-  countInStock: "",
-  subCategory: "",
-  rating:"",
-  images:""
-});
-const openEditProduct = async (id) => {
-  setOpenEdit(true);
-  setEditId(id);
-
-  const res = await fetchDataFromApi(`/api/products/${id}`);
-  if (res) {
-    setEditFields({
-      name: res.name || "",
-      price: res.price || "",
-      oldPrice: res.oldPrice || "",
-      brand: res.brand || "",
-      countInStock: res.countInStock || "",
-      rating:res.rating || "",
-      subCategory:res.subCategory || "",
-      images:res.images || ""
-    });
-  }
-};
-const updateProduct = async (e) => {
-  e.preventDefault();
-  setEditLoading(true);
-
-  await editData(`/api/products/${editId}`, editFields);
-
-  // update UI instantly
-  setProdData((prev) => ({
-    ...prev,
-    productList: prev.productList.map((item) =>
-      item._id === editId ? { ...item, ...editFields } : item
-    ),
-  }));
-
-  setEditLoading(false);
-  setOpenEdit(false);
 };
 
 const deleteProduct = async (id) => {
@@ -444,13 +386,11 @@ return (
                               <FaEye />
                             </Button>
                           </Link>
-                          <Button
-                            className="success"
-                            color="success"
-                            onClick={() => openEditProduct(item._id)}
-                          >
+                           <Link to={`/product/edit/${item._id}`}>
+                          <Button className="success" color="success">
                             <FaPencilAlt />
                           </Button>
+                        </Link>
                           <Button
                           className="error"
                           color="error"
@@ -481,118 +421,6 @@ return (
            </div> 
          </div> 
         </div> 
-          <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth>
-          <DialogTitle>Edit Product</DialogTitle>
-          <form onSubmit={updateProduct}>
-            <DialogContent>
-              <div className="form-group mb-3">
-              <TextField
-                label="Product Name"
-                name="name"
-                value={editFields.name}
-                onChange={(e) =>
-                  setEditFields({ ...editFields, name: e.target.value })
-                }
-                fullWidth
-                margin="dense"
-                />
-              </div>
-              <div className="form-group mb-3">
-              <TextField 
-                label="Category Image URL"
-                name="images"
-                value={editFields.images}
-                onChange={(e)=>
-                setEditFields({...editFields, images: e.target.value})
-                }
-                fullWidth
-                maargin="dense"
-                />
-              </div>
-            <div className="form-group mb-3"> 
-              <TextField
-                label="Price"
-                name="price"
-                value={editFields.price}
-                onChange={(e) =>
-                  setEditFields({ ...editFields, price: e.target.value })
-                }
-                fullWidth
-                margin="dense"
-              />
-              </div>
-              <div className="form-group mb-3">
-                <TextField
-                label="Stock"
-                name="countInStock"
-                value={editFields.countInStock}
-                onChange={(e) =>
-                  setEditFields({ ...editFields, countInStock: e.target.value })
-                }
-                fullWidth
-                margin="dense"
-              />
-              </div>
-            <div className="form-group mb-3"> 
-              <TextField
-                label="Rating"
-                name="rating"
-                value={editFields.rating}
-                onChange={(e)=>
-                setEditFields({...editFields, rating: e.target.value })
-                }
-                fullWidth
-                margin="dense"
-                />
-            </div>
-            <div className="form-group mb-3">
-              <TextField
-                label="Brand"
-                name="brand"
-                value={editFields.brand}
-                onChange={(e) =>
-                  setEditFields({...editFields, brand: e.target.value })
-                }
-                fullWidth
-                margin="dense"
-              />
-            </div>
-            <div className="form-group mb-3">
-              <TextField
-                label="oldPrice"
-                name="oldPrice"
-                value={editFields.oldPrice}
-                onChange={(e)=>
-                  setEditFields({...editFields, oldPrice: e.target.value})
-                }
-                fullWidth
-                margin="dense"
-              />
-            </div>
-            <div className="form-group mb-3">
-              <TextField
-               label="SUB CATEGORY"
-                name="subCategory"
-                value={editFields.subCategory}
-                onChange={(e)=>
-                  setEditFields({...editFields, subCategory: e.target.value})
-                }
-                fullWidth
-                margin="dense" 
-              />
-            </div>
-            </DialogContent>
-            <DialogActions> 
-              <Button onClick={handleEditClose} variant="outlined">
-                Cancel
-              </Button>
-              <Button type="submit" variant="contained" disabled={editLoading} > 
-                {editLoading ? ( <> <span style={{ color: "#ffeb3b" }}>Updating...</span> 
-            <CircularProgress size={16} color="inherit" className="ml-2" /> 
-            </> ) : ( "Update" )} </Button> 
-            </DialogActions>
-          </form>
-        </Dialog>
       </> 
       ); 
     }; 

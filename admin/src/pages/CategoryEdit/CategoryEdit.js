@@ -5,7 +5,6 @@ import { styled } from "@mui/material/styles";
 import { useState, useRef, useEffect, useContext } from "react";
 import { Button } from "@mui/material";
 import { FaCloudUploadAlt } from "react-icons/fa";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { editData, fetchDataFromApi } from "../utils/api";
 import { useNavigate , useParams } from "react-router-dom";
@@ -126,7 +125,8 @@ const compressImage = (file, maxWidth = 800, quality = 0.7) => {
 };
   /* ================== IMAGE HANDLERS ================== */
   const handleUploadClick = () => {
-  if (fileInputRef.current) {
+  if (fileInputRef.current) 
+  {
     fileInputRef.current.click();
   }
 };
@@ -160,9 +160,6 @@ const handleFileChange = async (e) => {
 
   e.target.value = null;
 };
- const handleDeleteImage = () => {
-  setUploadedImages([]);
- };
  useEffect(() => {
   const loadCategory = async () => {
     try {
@@ -173,21 +170,23 @@ const handleFileChange = async (e) => {
       let imageUrl = "";
       let localImages = [];
       if (Array.isArray(res.images) && res.images.length > 0) {
-        const img = res.images[0];
-        // BASE64 IMAGE
-        if (img.startsWith("data:")) {
-          localImages = res.images;
-        }
-        // LOCAL UPLOAD (works for both /uploads and full server path)
-        else if (img.includes("/uploads/")) {
-          localImages = res.images;
-        }
-        // EXTERNAL URL
-        else {
-          imageUrl = img;
-        }
+      const img = res.images[0];
 
+      if (img.startsWith("data:")) {
+        localImages = res.images;
+      } 
+      else if (
+        img.includes("/uploads/") ||
+        img.includes("cloudinary.com")
+      ) {
+        // ✅ Treat cloudinary as MEDIA
+        localImages = res.images;
+      } 
+      else {
+        // Only external links
+        imageUrl = img;
       }
+    }
       setFormFields({
         name: res.name || "",
         color: res.color || "",
@@ -272,81 +271,118 @@ loadCategory();
             style={{ display: "none" }}
             onChange={handleFileChange}
           />
-
           <div className="image-grid">
+        {/* EXISTING IMAGES (DB / CLOUDINARY) */}
+        {previews?.length > 0 &&
+          previews.map((img, index) => (
+            <div className="image-card position-relative" key={`preview-${index}`}>
+              <img
+                src={
+                  img.startsWith("http") || img.startsWith("data:")
+                    ? img
+                    : `http://localhost:5000${img}`
+                }
+                className="w-100"
+                alt=""
+              />
 
-            {/* Existing Images */}
-            {previews?.length > 0 &&
-              previews.map((img, index) => (
-                <div className="image-card position-relative" key={`preview-${index}`}>
-                  <img
-                     src={
-                        img.startsWith("http") || img.startsWith("data:")
-                          ? img
-                          : `http://localhost:5000${img}`
-                      }
-                    className="w-100"
-                    alt=""
-                  />
+              <span
+                onClick={() => {
+                  setPreviews((prev) => prev.filter((_, i) => i !== index));
 
-                  <span
-                    onClick={() =>
-                      setPreviews((prev) => prev.filter((_, i) => i !== index))
-                    }
-                    style={{
-                      position: "absolute",
-                      top: 5,
-                      right: 5,
-                      background: "red",
-                      color: "#fff",
-                      borderRadius: "50%",
-                      padding: "2px 6px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    ✕
-                  </span>
-                </div>
-              ))}
-
-            {/* Newly Uploaded Images */}
-            {uploadedImages.map((img, index) => (
-              <div className="image-card position-relative" key={`upload-${index}`}>
-                <LazyLoadImage
-                  src={URL.createObjectURL(img)}
-                  effect="blur"
-                  className="w-100"
-                />
-
-                <span
-                  onClick={() => handleDeleteImage(index)}
-                  style={{
-                    position: "absolute",
-                    top: 5,
-                    right: 5,
-                    background: "red",
-                    color: "#fff",
-                    borderRadius: "50%",
-                    padding: "2px 6px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ✕
-                </span>
-              </div>
-            ))}
-
-            {/* Upload Box */}
-            <div
-              className="image-card upload-box d-flex align-items-center justify-content-center"
-              onClick={handleUploadClick}
-              style={{ cursor: "pointer" }}
-            >
-              Upload Image
+                  // 🔥 IMPORTANT: sync with form
+                  setFormFields((prev) => ({
+                    ...prev,
+                    images: ""
+                  }));
+                }}
+                style={{
+                  position: "absolute",
+                  top: 5,
+                  right: 5,
+                  background: "red",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  padding: "2px 6px",
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </span>
             </div>
+          ))}
 
+        {/* NEWLY UPLOADED IMAGES */}
+        {uploadedImages.map((img, index) => (
+          <div className="image-card position-relative" key={`upload-${index}`}>
+            <img
+              src={URL.createObjectURL(img)}
+              className="w-100"
+              alt=""
+            />
+
+            <span
+              onClick={() =>
+                setUploadedImages((prev) => prev.filter((_, i) => i !== index))
+              }
+              style={{
+                position: "absolute",
+                top: 5,
+                right: 5,
+                background: "red",
+                color: "#fff",
+                borderRadius: "50%",
+                padding: "2px 6px",
+                cursor: "pointer",
+              }}
+            >
+              ✕
+            </span>
           </div>
+        ))}
 
+        {/* EMPTY STATE */}
+        {previews.length === 0 && uploadedImages.length === 0 && (
+          <div className="image-card d-flex align-items-center justify-content-center">
+            <span>No Image Selected</span>
+          </div>
+        )}
+
+        {/* UPLOAD BOX (CLICK + DRAG & DROP) */}
+        <div
+          className="image-card upload-box d-flex align-items-center justify-content-center"
+          onClick={handleUploadClick}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+
+            const files = Array.from(e.dataTransfer.files);
+
+            setUploadedImages(files);
+            setPreviews([]);
+
+            setFormFields((prev) => ({
+              ...prev,
+              images: ""
+            }));
+          }}
+          style={{
+            cursor: "pointer",
+            border: "2px dashed #ccc"
+          }}
+        >
+          Upload / Drag Image
+        </div>
+
+        {/* 🔥 THIS WAS MISSING */}
+        <input
+          type="file"
+          multiple
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
+        </div>
           <Button
             type="submit"
             className="btn-blue btn-lg mt-4"

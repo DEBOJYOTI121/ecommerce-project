@@ -17,6 +17,7 @@ import { createContext, useEffect, useState } from "react";
 import { SnackbarProvider } from "notistack";
 import LoadingBar from "react-top-loading-bar";
 import EditCategory from "./pages/CategoryEdit/CategoryEdit";
+import ProductEdit from "./pages/ProductEdit/ProductEdit";
 
 /* ================== CONTEXT ================== */
 const MyContext = createContext();
@@ -124,6 +125,7 @@ function AppContent() {
             <Route path="/product/details" element={<ProductDetails />} />
             <Route path="/product/upload" element={<ProductUpload />} />
             <Route path="/product/productlist" element={<ProductList />} />
+            <Route path="/product/edit/:id" element={<ProductEdit/>} />
             <Route path="/category/add" element={<CategoryAdd />} />
             <Route path="/category/edit/:id" element={<EditCategory/>} />
             <Route path="/category" element={<Category />} />

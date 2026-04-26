@@ -196,8 +196,7 @@ const handlePageChange = async (event, value) => {
       </div> 
       </div> 
       </div>
-  </div> 
-{/* ================= EDIT MODAL ================= */}  
+  </div>  
 </> 
 ); 
 }; 

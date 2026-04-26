@@ -8,16 +8,15 @@ import { useState, useRef, useEffect, useContext } from "react";
 import Rating from '@mui/material/Rating';
 import { Button } from "@mui/material";
 import { FaCloudUploadAlt } from 'react-icons/fa';
-
-import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
 import { MyContext } from "../../App";
 import { fetchDataFromApi } from "../utils/api";
 import CircularProgress from "@mui/material/CircularProgress";
 import { useSnackbar } from "notistack";
-import { postData } from "../utils/api"; // adjust path if needed
+import { editData } from "../utils/api";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 
 const StyledBreadcrumb = styled(Chip)(({ theme }) => {
@@ -46,7 +45,7 @@ const StyledBreadcrumb = styled(Chip)(({ theme }) => {
     },
   };
 });
-const ProductUpload = () => {
+const ProductEdit = () => {
   const [categoryVal, setCategoryVal] = useState("");
   const [subCategoryVal, setSubCategoryVal] = useState("");
   const [brandVal, setBrandVal] = useState("");
@@ -84,7 +83,8 @@ const ProductUpload = () => {
     category: event.target.value
   }));
   };
-
+  const { id } = useParams();
+  const [previews, setPreviews] = useState([]);
   const handleChangeSubCategory = (event) => {
     setSubCategoryVal(event.target.value);
       setFormFields((prev) => ({
@@ -105,7 +105,13 @@ const ProductUpload = () => {
   };
 
   const handleChangeFeatured = (event) => {
-    setFeaturedVal(event.target.value);
+    const value = event.target.value === "yes";
+      setFeaturedVal(event.target.value);
+
+      setFormFields((prev) => ({
+        ...prev,
+        isFeatured: value
+      }));
   };
    const loadCategories = async () => {
   const res = await fetchDataFromApi("/api/category/all");
@@ -131,22 +137,53 @@ const ProductUpload = () => {
    
     },[setProgress]);
     useEffect(() => {
-    setFormFields((prev) => ({
-    ...prev,
-    images: uploadedImages
-    }));
-   }, [uploadedImages]);
+  const loadProduct = async () => {
+  try {
+    const res = await fetchDataFromApi(`/api/products/${id}`);
+    if (!res) return;
+    const isUrlImage =
+    res.imageType === "url" ||
+    (res.images && res.images.length > 0 && res.images[0].startsWith("http"));
 
-  // ✅ compress + preview multiple images
-     const handleFileChange = (e) => {
-  const files = Array.from(e.target.files);
-  setUploadedImages((prev) => [...prev, ...files]);
-   };
-  // ✅ delete image
-  const handleDeleteImage = (index) => {
-    const updatedImages = uploadedImages.filter((_, i) => i !== index);
-    setUploadedImages(updatedImages);
-  };
+  if (isUrlImage) {
+    setUrlImages(res.images);
+    setPreviews([]);
+
+    // ✅ ADD THIS LINE HERE
+    setImageUrl(res.images[0] || "");
+  } else {
+    setPreviews(res.images);
+    setUrlImages([]);
+
+    // optional: clear input
+    setImageUrl("");
+  }
+    // OTHER STATES
+    setCategoryVal(res.category?._id || "");
+    setSubCategoryVal(res.subCategory || "");
+    setBrandVal(res.brand || "");
+    setIsFeaturedValue(res.isFeatured);
+
+    setFormFields({
+      name: res.name || "",
+      description: res.description || "",
+      brand: res.brand || "",
+      price: res.price || "",
+      oldPrice: res.oldPrice || "",
+      category: res.category?._id || "",
+      subCategory: res.subCategory || "",
+      countInStock: res.countInStock || "",
+      rating: res.rating || 0,
+      isFeatured: res.isFeatured || false,
+      images: res.images || []
+    });
+
+  } catch (err) {
+    console.error("Error loading product:", err);
+  }
+};
+  loadProduct();
+  }, [id]);
   const handleChangeIsFeaturedValue = (event) => {
   const value = event.target.value;
 
@@ -176,6 +213,7 @@ const ProductUpload = () => {
  const addProduct = async (e) => {
   e.preventDefault();
   setIsLoading(true);
+
   // ✅ FRONTEND VALIDATION (VERY IMPORTANT)
   if (!formFields.name.trim()) {
     enqueueSnackbar("Product name is required", { variant: "error" });
@@ -201,7 +239,11 @@ const ProductUpload = () => {
     return;
   }
 
-  if (urlImages.length === 0 && uploadedImages.length === 0) {
+  if (
+  urlImages.length === 0 &&
+  uploadedImages.length === 0 &&
+  previews.length === 0
+   ) {
     enqueueSnackbar("Please add at least one product image", {
       variant: "error",
     });
@@ -219,26 +261,29 @@ const ProductUpload = () => {
       }
     });
 
-    // ✅ IF–ELSE image logic (matches backend)
-    if (urlImages.length > 0) {
-      urlImages.forEach((url) => {
+    // ✅ MEDIA FILE
+      if (uploadedImages.length > 0) {
+        uploadedImages.forEach((file) => {
+          formData.append("images", file);
+        });
+        formData.append("imageType", "file");
+      }
+
+      // ✅ IMAGE URL
+     else if (urlImages.length > 0 || previews.length > 0) {
+      const allImages = [...urlImages, ...previews];
+
+      allImages.forEach((url) => {
         formData.append("imageUrls", url);
       });
+
       formData.append("imageType", "url");
-    } else {
-      uploadedImages.forEach((file) => {
-        formData.append("images", file);
-      });
-      formData.append("imageType", "file");
     }
-
-    await postData("/api/products/create", formData, true);
-
-    enqueueSnackbar("Product added successfully!", {
+    await editData(`/api/products/${id}`, formData);
+     enqueueSnackbar("Product updated successfully!",{
       variant: "success",
     });
-
-    navigate("/product/productlist");
+     navigate("/product/productlist");
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
 
@@ -254,9 +299,13 @@ const handleAddImageUrl = () => {
   if (!imageUrl.trim()) return;
 
   setUrlImages((prev) => [...prev, imageUrl.trim()]);
+  setUploadedImages([]);
+   setFormFields((prev) => ({
+  ...prev,
+  images: [...(prev.images || []), imageUrl.trim()]
+  }));
   setImageUrl("");
 };
-
  return (
     <>
       <div className="productOld right-content w-100  custom-width">
@@ -282,7 +331,6 @@ const handleAddImageUrl = () => {
           </div>
         </div>
       </div>
-
       <form className="form" onSubmit={addProduct}>
         <div className="row">
           <div className="col-sm-12 custom-wide">
@@ -426,7 +474,6 @@ const handleAddImageUrl = () => {
                       value={ratingsValue}
                       onChange={(event, newValue) => {
                         setRatingsValue(newValue);
-
                         setFormFields((prev) => ({
                           ...prev,
                           rating: newValue
@@ -497,131 +544,141 @@ const handleAddImageUrl = () => {
                   ? `Using ${urlImages.length} image URL(s)`
                   : `Using ${uploadedImages.length} uploaded image(s)`}
               </p>
-              <h6 className="text-black mb-3">MEDIA AND PUBLISHED</h6>
-              <div className="image-grid">
-                {/* static images (no change) */}
-                <div className="image-card">
-                  <LazyLoadImage
-                    src="/images/gaming-main.jpg"
-                    alt="img1"
-                    effect="blur"
-                  />
-                </div>
-
-                <div className="image-card">
-                  <LazyLoadImage
-                    src="/images/gaming-main1.jpg"
-                    alt="img2"
-                    effect="blur"
-                  />
-                </div>
-
-                <div className="image-card">
-                  <LazyLoadImage
-                    src="/images/gaming-main2.jpg"
-                    alt="img3"
-                    effect="blur"
-                  />
-                </div>
-
-                {/* ✅ uploaded images with delete */}
-                {/* ✅ Image URLs preview */}
+              {/* ADD IMAGE URL INPUT */}
+              {/* ✅ URL PREVIEW HERE */}
+              <div className="url-preview-grid">
                 {urlImages.map((url, index) => (
-                  <div className="image-card position-relative" key={`url-${index}`}>
-                    <LazyLoadImage
-                      src={url}
-                      alt={`url-img-${index}`}
-                      effect="blur"
-                    />
+                  <div className="url-preview-card" key={index}>
+                    <img src={url} className="url-preview-img" alt="" />
 
                     <span
+                      className="url-preview-delete"
                       onClick={() =>
                         setUrlImages((prev) => prev.filter((_, i) => i !== index))
                       }
-                      style={{
-                        position: "absolute",
-                        top: "5px",
-                        right: "5px",
-                        background: "red",
-                        color: "white",
-                        borderRadius: "50%",
-                        padding: "2px 6px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        zIndex: 2
-                      }}
                     >
                       ✕
                     </span>
                   </div>
                 ))}
-                {uploadedImages.map((img, index) => (
-                  <div className="image-card position-relative" key={index}>
-                    <LazyLoadImage
-                      src={URL.createObjectURL(img)}   // 🔥 FIX HERE
-                      alt={`upload-${index}`}
-                      effect="blur"
-                    />
+              </div>
+              <h6 className="text-black mb-3">MEDIA AND PUBLISHED</h6>
+              <div className="image-grid">                              
+                {/* EXISTING IMAGES (DB / CLOUDINARY) */}
+                {previews?.length > 0 &&
+                  previews.map((img, index) => (
+                    <div className="image-card position-relative" key={`preview-${index}`}>
+                      <img
+                        src={
+                          img.startsWith("http") || img.startsWith("data:")
+                            ? img
+                            : `http://localhost:5000${img}`
+                        }
+                        className="w-100"
+                        alt=""
+                      />
 
-                    <span
-                      onClick={() => handleDeleteImage(index)}
-                      style={{
-                        position: "absolute",
-                        top: "5px",
-                        right: "5px",
-                        background: "red",
-                        color: "white",
-                        borderRadius: "50%",
-                        padding: "2px 6px",
-                        fontSize: "12px",
-                        cursor: "pointer",
-                        zIndex: 2
-                      }}
-                    >
-                      ✕
-                    </span>
+                      <span
+                        onClick={() => {
+                          setPreviews((prev) => prev.filter((_, i) => i !== index));
+
+                          // 🔥 IMPORTANT: sync with form
+                          setFormFields((prev) => ({
+                            ...prev,
+                            images: prev.images.filter((_, i) => i !== index)
+                          }));
+                        }}
+                        style={{
+                          position: "absolute",
+                          top: 5,
+                          right: 5,
+                          background: "red",
+                          color: "#fff",
+                          borderRadius: "50%",
+                          padding: "2px 6px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        ✕
+                      </span>
+                    </div>
+                  ))}
+                {/* EMPTY STATE */}
+                {previews.length === 0 && uploadedImages.length === 0 && urlImages.length === 0 && (
+                  <div className="image-card d-flex align-items-center justify-content-center">
+                    <span>No Image Selected</span>
                   </div>
-                ))}
+                )}
 
-                {/* ✅ upload button */}
+                {/* UPLOAD BOX (CLICK + DRAG & DROP) */}
                 <div
                   className="image-card upload-box d-flex align-items-center justify-content-center"
                   onClick={handleUploadClick}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="text-black">Upload Image</span>
-                </div>
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
 
-                {/* ✅ hidden input */}
+                    const files = Array.from(e.dataTransfer.files);
+
+                    setUploadedImages(files);
+                    setPreviews([]);
+                    setUrlImages([]);
+
+                    // 🔥 clear URL
+                    setFormFields((prev) => ({
+                      ...prev,
+                      images: ""
+                    }));
+                  }}
+                  style={{
+                    cursor: "pointer",
+                    border: "2px dashed #ccc"
+                  }}
+                >
+                  Upload / Drag Image
+               </div>
                 <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  style={{ display: "none" }}
-                />
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+
+                      setUploadedImages(files);
+                      setPreviews([]);
+                      setUrlImages([]); // 👈 VERY IMPORTANT
+
+                      setFormFields((prev) => ({
+                        ...prev,
+                        images: ""
+                      }));
+                    }}
+                  />
               </div>
             </div>
-
-
               <br />
               <Button
-              type="submit"
-              className="btn-blue btn-lg btn-big"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  Publishing...
-                  <CircularProgress size={18} color="inherit" className="ml-2" />
-                </>
-              ) : (
-                <>
-                  <FaCloudUploadAlt />&nbsp;PUBLISH AND VIEW
-                </>
-              )}
-            </Button>
+                type="submit"
+                className="btn-blue btn-lg btn-big"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    Publishing...
+                    <CircularProgress
+                      size={18}
+                      color="inherit"
+                      className="ml-2"
+                    />
+                  </>
+                ) : (
+                  <>
+                  <FaCloudUploadAlt />&nbsp;UPDATE PRODUCT
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>
@@ -629,4 +686,4 @@ const handleAddImageUrl = () => {
     </>
   );
 };
-export default ProductUpload;
+export default ProductEdit;

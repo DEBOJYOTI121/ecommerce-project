@@ -1128,3 +1128,69 @@ body.dark .topLoadingBar{background: #ff4964 !important;}
   height: 59px;
   min-width: 200px;
 }
+a{
+    color: rgb(255 255 255);
+    text-decoration: underline;
+}
+/* === URL IMAGE SECTION === */
+.url-preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.url-preview-card {
+  width: 150px;
+  height: 150px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  background: #f9f9f9;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.2s ease;
+}
+.url-preview-card:hover {
+  transform: scale(1.05);
+}
+.url-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+/* delete button */
+.url-preview-delete {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: #ff3b3b;
+  color: #fff;
+  border-radius: 50%;
+  padding: 4px 7px;
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 2;
+  line-height: 1;
+}
+/* === UPLOAD BOX (optional improvement) === */
+.upload-box-custom {
+  width: 150px;
+  height: 150px;
+  border: 2px dashed #bbb;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.upload-box-custom:hover {
+  border-color: #1976d2;
+  color: #1976d2;
+}
